@@ -37,7 +37,7 @@ T linear(const T& a, const T& b, F x) {
     if (x <= 0) return a;
     if (x >= 1) return b;
 
-    return  a;
+    return a * (1.0 - x) + b * x;
 }
 
 // clang-format off
@@ -53,7 +53,10 @@ T linear(const T& a, const T& b, F x) {
 #define ENABLE_BILINEAR_UNITTEST 0
 template<typename T, typename F = double> 
 T bilinear(const std::array<T, 4> &v, F x, F y) {
-    return v[0];
+    T top_row = linear(v[0], v[1], x);
+    T bottom_row = linear(v[2], v[3], x);
+    
+    return linear(top_row, bottom_row, y);
 }
 
 
@@ -66,7 +69,8 @@ T bilinear(const std::array<T, 4> &v, F x, F y) {
 #define ENABLE_QUADRATIC_UNITTEST 0
 template <typename T, typename F = double>
 T quadratic(const T& a, const T& b, const T& c, F x) {
-    return a;
+
+     return (1.0 - x) * (1.0 - 2 * x) * a + 4 * x * (1.0 - x) * b + x * (2.0 * x - 1.0) * c;
 }
 
 // clang-format off
@@ -86,7 +90,12 @@ T quadratic(const T& a, const T& b, const T& c, F x) {
 #define ENABLE_BIQUADRATIC_UNITTEST 0
 template <typename T, typename F = double>
 T biQuadratic(const std::array<T, 9>& v, F x, F y) {
-    return v[0];
+
+    T first_row = quadratic(v[0], v[1], v[2], x);
+    T second_row = quadratic(v[3], v[4], v[5], x);
+    T third_row = quadratic(v[6], v[7], v[8], x);
+
+    return quadratic(first_row, second_row, third_row, y);
 }
 
 // clang-format off
@@ -100,10 +109,30 @@ T biQuadratic(const std::array<T, 9>& v, F x, F y) {
         x
     */
 // clang-format on
-#define ENABLE_BARYCENTRIC_UNITTEST 0
+#define ENABLE_BARYCENTRIC_UNITTEST 1
 template <typename T, typename F = double>
 T barycentric(const std::array<T, 4>& v, F x, F y) {
-    return v[0];
+    float alpha, beta, gamma;
+
+    if (x + y < 1.f)  // 012 triangle
+    {
+        alpha = 1.0f - (x + y);
+        beta = x;
+        gamma = y;
+
+        T t2 = v[0] * alpha + v[1] * beta + v[2] * gamma;
+
+        return t2;
+
+    } else {   //123 triangle
+        alpha = (x + y) - 1.0f;
+        beta = 1 - y;
+        gamma = 1 - x;
+
+        T t1 = v[3] * alpha + v[1] * beta + v[2] * gamma;
+
+        return t1;
+    }
 }
 
 }  // namespace Interpolation
