@@ -33,8 +33,10 @@ vec4 ScalarToColorMapping::sample(float t) const {
 
     // TODO: Interpolate colors in baseColors_ and set dummy color to result
 
+    /* calculates the difference in each RGB component between the colors at the right and left 
+     indices and then multiplies it by the normalized value t. */
     vec4 finalColor(
-        vec4(baseColors_[left]).r + (vec4(baseColors_[right]).r - vec4(baseColors_[left]).r) * t,
+        vec4(baseColors_[left]).r + (vec4(baseColors_[right]).r - vec4(baseColors_[left]).r) * t, 
         vec4(baseColors_[left]).g + (vec4(baseColors_[right]).g - vec4(baseColors_[left]).g) * t,
         vec4(baseColors_[left]).b + (vec4(baseColors_[right]).b - vec4(baseColors_[left]).b) * t,
         1);
